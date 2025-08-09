@@ -1,0 +1,2552 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000         ;/*!
+    2 00000000         ;    \file    startup_gd32f5xx.s
+    3 00000000         ;    \brief   start up file
+    4 00000000         ;
+    5 00000000         ;    \version 2024-12-20, V1.2.0, firmware for GD32F5xx
+    6 00000000         ;*/
+    7 00000000         ;
+    8 00000000         ;/*
+    9 00000000         ; * Copyright (c) 2009-2018 Arm Limited. All rights rese
+                       rved.
+   10 00000000         ; * Copyright (c) 2024, GigaDevice Semiconductor Inc.
+   11 00000000         ; *
+   12 00000000         ; * SPDX-License-Identifier: Apache-2.0
+   13 00000000         ; *
+   14 00000000         ; * Licensed under the Apache License, Version 2.0 (the 
+                       License); you may
+   15 00000000         ; * not use this file except in compliance with the Lice
+                       nse.
+   16 00000000         ; * You may obtain a copy of the License at
+   17 00000000         ; *
+   18 00000000         ; * www.apache.org/licenses/LICENSE-2.0
+   19 00000000         ; *
+   20 00000000         ; * Unless required by applicable law or agreed to in wr
+                       iting, software
+   21 00000000         ; * distributed under the License is distributed on an A
+                       S IS BASIS, WITHOUT
+   22 00000000         ; * WARRANTIES OR CONDITIONS OF ANY KIND, either express
+                        or implied.
+   23 00000000         ; * See the License for the specific language governing 
+                       permissions and
+   24 00000000         ; * limitations under the License.
+   25 00000000         ; */
+   26 00000000         ;
+   27 00000000         ;/* This file refers the CMSIS standard, some adjustment
+                       s are made according to GigaDevice chips */
+   28 00000000         
+   29 00000000         ; <h> Stack Configuration
+   30 00000000         ;   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
+   31 00000000         ; </h>
+   32 00000000         
+   33 00000000 00000400 
+                       Stack_Size
+                               EQU              0x00000400
+   34 00000000         
+   35 00000000                 AREA             STACK, NOINIT, READWRITE, ALIGN
+=3
+   36 00000000         Stack_Mem
+                               SPACE            Stack_Size
+   37 00000400         __initial_sp
+   38 00000400         
+   39 00000400         
+   40 00000400         ; <h> Heap Configuration
+   41 00000400         ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
+   42 00000400         ; </h>
+   43 00000400         
+   44 00000400 00000400 
+                       Heap_Size
+                               EQU              0x00000400
+   45 00000400         
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   46 00000400                 AREA             HEAP, NOINIT, READWRITE, ALIGN=
+3
+   47 00000000         __heap_base
+   48 00000000         Heap_Mem
+                               SPACE            Heap_Size
+   49 00000400         __heap_limit
+   50 00000400         
+   51 00000400                 PRESERVE8
+   52 00000400                 THUMB
+   53 00000400         
+   54 00000400         ;               /* reset Vector Mapped to at Address 0 *
+                       /
+   55 00000400                 AREA             RESET, DATA, READONLY
+   56 00000000                 EXPORT           __Vectors
+   57 00000000                 EXPORT           __Vectors_End
+   58 00000000                 EXPORT           __Vectors_Size
+   59 00000000         
+   60 00000000 00000000 
+                       __Vectors
+                               DCD              __initial_sp ; Top of Stack
+   61 00000004 00000000        DCD              Reset_Handler ; Reset Handler
+   62 00000008 00000000        DCD              NMI_Handler ; NMI Handler
+   63 0000000C 00000000        DCD              HardFault_Handler ; Hard Fault 
+                                                            Handler
+   64 00000010 00000000        DCD              MemManage_Handler 
+                                                            ; MPU Fault Handler
+                                                            
+   65 00000014 00000000        DCD              BusFault_Handler 
+                                                            ; Bus Fault Handler
+                                                            
+   66 00000018 00000000        DCD              UsageFault_Handler ; Usage Faul
+                                                            t Handler
+   67 0000001C 00000000        DCD              0           ; Reserved
+   68 00000020 00000000        DCD              0           ; Reserved
+   69 00000024 00000000        DCD              0           ; Reserved
+   70 00000028 00000000        DCD              0           ; Reserved
+   71 0000002C 00000000        DCD              SVC_Handler ; SVCall Handler
+   72 00000030 00000000        DCD              DebugMon_Handler ; Debug Monito
+                                                            r Handler
+   73 00000034 00000000        DCD              0           ; Reserved
+   74 00000038 00000000        DCD              PendSV_Handler ; PendSV Handler
+                                                            
+   75 0000003C 00000000        DCD              SysTick_Handler 
+                                                            ; SysTick Handler
+   76 00000040         
+   77 00000040         ;               /* external interrupts handler */
+   78 00000040 00000000        DCD              WWDGT_IRQHandler ; 16:Window Wa
+                                                            tchdog Timer
+   79 00000044 00000000        DCD              LVD_IRQHandler ; 17:LVD through
+                                                             EXTI Line detect
+   80 00000048 00000000        DCD              TAMPER_STAMP_IRQHandler ; 18:Ta
+                                                            mper and TimeStamp 
+                                                            through EXTI Line d
+                                                            etect
+   81 0000004C 00000000        DCD              RTC_WKUP_IRQHandler ; 19:RTC Wa
+                                                            keup through EXTI L
+                                                            ine
+   82 00000050 00000000        DCD              FMC_IRQHandler ; 20:FMC
+   83 00000054 00000000        DCD              RCU_CTC_IRQHandler 
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+                                                            ; 21:RCU and CTC
+   84 00000058 00000000        DCD              EXTI0_IRQHandler 
+                                                            ; 22:EXTI Line 0
+   85 0000005C 00000000        DCD              EXTI1_IRQHandler 
+                                                            ; 23:EXTI Line 1
+   86 00000060 00000000        DCD              EXTI2_IRQHandler 
+                                                            ; 24:EXTI Line 2
+   87 00000064 00000000        DCD              EXTI3_IRQHandler 
+                                                            ; 25:EXTI Line 3
+   88 00000068 00000000        DCD              EXTI4_IRQHandler 
+                                                            ; 26:EXTI Line 4
+   89 0000006C 00000000        DCD              DMA0_Channel0_IRQHandler 
+                                                            ; 27:DMA0 Channel0
+   90 00000070 00000000        DCD              DMA0_Channel1_IRQHandler 
+                                                            ; 28:DMA0 Channel1
+   91 00000074 00000000        DCD              DMA0_Channel2_IRQHandler 
+                                                            ; 29:DMA0 Channel2
+   92 00000078 00000000        DCD              DMA0_Channel3_IRQHandler 
+                                                            ; 30:DMA0 Channel3
+   93 0000007C 00000000        DCD              DMA0_Channel4_IRQHandler 
+                                                            ; 31:DMA0 Channel4
+   94 00000080 00000000        DCD              DMA0_Channel5_IRQHandler 
+                                                            ; 32:DMA0 Channel5
+   95 00000084 00000000        DCD              DMA0_Channel6_IRQHandler 
+                                                            ; 33:DMA0 Channel6
+   96 00000088 00000000        DCD              ADC_IRQHandler ; 34:ADC
+   97 0000008C 00000000        DCD              CAN0_TX_IRQHandler ; 35:CAN0 TX
+                                                            
+   98 00000090 00000000        DCD              CAN0_RX0_IRQHandler 
+                                                            ; 36:CAN0 RX0
+   99 00000094 00000000        DCD              CAN0_RX1_IRQHandler 
+                                                            ; 37:CAN0 RX1
+  100 00000098 00000000        DCD              CAN0_EWMC_IRQHandler 
+                                                            ; 38:CAN0 EWMC
+  101 0000009C 00000000        DCD              EXTI5_9_IRQHandler 
+                                                            ; 39:EXTI5 to EXTI9
+                                                            
+  102 000000A0 00000000        DCD              TIMER0_BRK_TIMER8_IRQHandler ; 
+                                                            40:TIMER0 Break and
+                                                             TIMER8
+  103 000000A4 00000000        DCD              TIMER0_UP_TIMER9_IRQHandler ; 4
+                                                            1:TIMER0 Update and
+                                                             TIMER9
+  104 000000A8 00000000        DCD              TIMER0_TRG_CMT_TIMER10_IRQHandl
+er 
+                                                            ; 42:TIMER0 Trigger
+                                                             and Commutation an
+                                                            d TIMER10
+  105 000000AC 00000000        DCD              TIMER0_Channel_IRQHandler ; 43:
+                                                            TIMER0 Capture Comp
+                                                            are
+  106 000000B0 00000000        DCD              TIMER1_IRQHandler ; 44:TIMER1
+  107 000000B4 00000000        DCD              TIMER2_IRQHandler ; 45:TIMER2
+  108 000000B8 00000000        DCD              TIMER3_IRQHandler ; 46:TIMER3
+  109 000000BC 00000000        DCD              I2C0_EV_IRQHandler 
+                                                            ; 47:I2C0 Event
+  110 000000C0 00000000        DCD              I2C0_ER_IRQHandler 
+                                                            ; 48:I2C0 Error
+  111 000000C4 00000000        DCD              I2C1_EV_IRQHandler 
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+                                                            ; 49:I2C1 Event
+  112 000000C8 00000000        DCD              I2C1_ER_IRQHandler 
+                                                            ; 50:I2C1 Error
+  113 000000CC 00000000        DCD              SPI0_IRQHandler ; 51:SPI0
+  114 000000D0 00000000        DCD              SPI1_IRQHandler ; 52:SPI1
+  115 000000D4 00000000        DCD              USART0_IRQHandler ; 53:USART0
+  116 000000D8 00000000        DCD              USART1_IRQHandler ; 54:USART1
+  117 000000DC 00000000        DCD              USART2_IRQHandler ; 55:USART2
+  118 000000E0 00000000        DCD              EXTI10_15_IRQHandler ; 56:EXTI1
+                                                            0 to EXTI15
+  119 000000E4 00000000        DCD              RTC_Alarm_IRQHandler 
+                                                            ; 57:RTC Alarm
+  120 000000E8 00000000        DCD              USBFS_WKUP_IRQHandler 
+                                                            ; 58:USBFS Wakeup
+  121 000000EC 00000000        DCD              TIMER7_BRK_TIMER11_IRQHandler ;
+                                                             59:TIMER7 Break an
+                                                            d TIMER11
+  122 000000F0 00000000        DCD              TIMER7_UP_TIMER12_IRQHandler ; 
+                                                            60:TIMER7 Update an
+                                                            d TIMER12
+  123 000000F4 00000000        DCD              TIMER7_TRG_CMT_TIMER13_IRQHandl
+er 
+                                                            ; 61:TIMER7 Trigger
+                                                             and Commutation an
+                                                            d TIMER13
+  124 000000F8 00000000        DCD              TIMER7_Channel_IRQHandler ; 62:
+                                                            TIMER7 Channel Capt
+                                                            ure Compare
+  125 000000FC 00000000        DCD              DMA0_Channel7_IRQHandler 
+                                                            ; 63:DMA0 Channel7
+  126 00000100 00000000        DCD              EXMC_IRQHandler ; 64:EXMC
+  127 00000104 00000000        DCD              SDIO_IRQHandler ; 65:SDIO
+  128 00000108 00000000        DCD              TIMER4_IRQHandler ; 66:TIMER4
+  129 0000010C 00000000        DCD              SPI2_IRQHandler ; 67:SPI2
+  130 00000110 00000000        DCD              UART3_IRQHandler ; 68:UART3
+  131 00000114 00000000        DCD              UART4_IRQHandler ; 69:UART4
+  132 00000118 00000000        DCD              TIMER5_DAC_IRQHandler ; 70:TIME
+                                                            R5 and DAC0 DAC1 Un
+                                                            derrun error
+  133 0000011C 00000000        DCD              TIMER6_IRQHandler ; 71:TIMER6
+  134 00000120 00000000        DCD              DMA1_Channel0_IRQHandler 
+                                                            ; 72:DMA1 Channel0
+  135 00000124 00000000        DCD              DMA1_Channel1_IRQHandler 
+                                                            ; 73:DMA1 Channel1
+  136 00000128 00000000        DCD              DMA1_Channel2_IRQHandler 
+                                                            ; 74:DMA1 Channel2
+  137 0000012C 00000000        DCD              DMA1_Channel3_IRQHandler 
+                                                            ; 75:DMA1 Channel3
+  138 00000130 00000000        DCD              DMA1_Channel4_IRQHandler 
+                                                            ; 76:DMA1 Channel4
+  139 00000134 00000000        DCD              ENET_IRQHandler ; 77:Ethernet
+  140 00000138 00000000        DCD              ENET_WKUP_IRQHandler ; 78:Ether
+                                                            net Wakeup through 
+                                                            EXTI Line
+  141 0000013C 00000000        DCD              CAN1_TX_IRQHandler ; 79:CAN1 TX
+                                                            
+  142 00000140 00000000        DCD              CAN1_RX0_IRQHandler 
+                                                            ; 80:CAN1 RX0
+  143 00000144 00000000        DCD              CAN1_RX1_IRQHandler 
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+                                                            ; 81:CAN1 RX1
+  144 00000148 00000000        DCD              CAN1_EWMC_IRQHandler 
+                                                            ; 82:CAN1 EWMC
+  145 0000014C 00000000        DCD              USBFS_IRQHandler ; 83:USBFS
+  146 00000150 00000000        DCD              DMA1_Channel5_IRQHandler 
+                                                            ; 84:DMA1 Channel5
+  147 00000154 00000000        DCD              DMA1_Channel6_IRQHandler 
+                                                            ; 85:DMA1 Channel6
+  148 00000158 00000000        DCD              DMA1_Channel7_IRQHandler 
+                                                            ; 86:DMA1 Channel7
+  149 0000015C 00000000        DCD              USART5_IRQHandler ; 87:USART5
+  150 00000160 00000000        DCD              I2C2_EV_IRQHandler 
+                                                            ; 88:I2C2 Event
+  151 00000164 00000000        DCD              I2C2_ER_IRQHandler 
+                                                            ; 89:I2C2 Error
+  152 00000168 00000000        DCD              USBHS_EP1_Out_IRQHandler ; 90:U
+                                                            SBHS Endpoint 1 Out
+                                                             
+  153 0000016C 00000000        DCD              USBHS_EP1_In_IRQHandler ; 91:US
+                                                            BHS Endpoint 1 in
+  154 00000170 00000000        DCD              USBHS_WKUP_IRQHandler ; 92:USBH
+                                                            S Wakeup through EX
+                                                            TI Line
+  155 00000174 00000000        DCD              USBHS_IRQHandler ; 93:USBHS
+  156 00000178 00000000        DCD              DCI_IRQHandler ; 94:DCI
+  157 0000017C 00000000        DCD              0           ; 95:Reserved
+  158 00000180 00000000        DCD              TRNG_IRQHandler ; 96:TRNG
+  159 00000184 00000000        DCD              FPU_IRQHandler ; 97:FPU
+  160 00000188 00000000        DCD              UART6_IRQHandler ; 98:UART6
+  161 0000018C 00000000        DCD              UART7_IRQHandler ; 99:UART7
+  162 00000190 00000000        DCD              SPI3_IRQHandler ; 100:SPI3
+  163 00000194 00000000        DCD              SPI4_IRQHandler ; 101:SPI4
+  164 00000198 00000000        DCD              SPI5_IRQHandler ; 102:SPI5
+  165 0000019C 00000000        DCD              SAI_IRQHandler ; 103:SAI
+  166 000001A0 00000000        DCD              TLI_IRQHandler ; 104:TLI
+  167 000001A4 00000000        DCD              TLI_ER_IRQHandler 
+                                                            ; 105:TLI Error
+  168 000001A8 00000000        DCD              IPA_IRQHandler ; 106:IPA
+  169 000001AC 00000000        DCD              PKCAU_IRQHandler ; 107:PKCAU
+  170 000001B0 00000000        DCD              I2C3_EV_IRQHandler 
+                                                            ; 108:I2C3 Event
+  171 000001B4 00000000        DCD              I2C3_ER_IRQHandler 
+                                                            ; 109:I2C3 Error
+  172 000001B8 00000000        DCD              I2C4_EV_IRQHandler 
+                                                            ; 110:I2C4 Event
+  173 000001BC 00000000        DCD              I2C4_ER_IRQHandler 
+                                                            ; 111:I2C4 Error
+  174 000001C0 00000000        DCD              I2C5_EV_IRQHandler 
+                                                            ; 112:I2C5 Event
+  175 000001C4 00000000        DCD              I2C5_ER_IRQHandler 
+                                                            ; 113:I2C5 Error
+  176 000001C8 00000000        DCD              I2C3_WKUP_IRQHandler ; 114:I2C3
+                                                             Wakeup through EXT
+                                                            I Line
+  177 000001CC 00000000        DCD              I2C4_WKUP_IRQHandler ; 115:I2C4
+                                                             Wakeup through EXT
+                                                            I Line
+  178 000001D0 00000000        DCD              I2C5_WKUP_IRQHandler ; 116:I2C5
+                                                             Wakeup through EXT
+
+
+
+ARM Macro Assembler    Page 6 
+
+
+                                                            I Line
+  179 000001D4 00000000        DCD              SYSCFG_SINGLE_BIT_ECC_ER_IRQHan
+dler 
+                                                            ; 117:SYSCFG SRAM a
+                                                            nd Flash single bit
+                                                             ECC Error
+  180 000001D8 00000000        DCD              HAU_IRQHandler ; 118:HAU  
+  181 000001DC 00000000        DCD              CAU_IRQHandler ; 119:CAU
+  182 000001E0         
+  183 000001E0         __Vectors_End
+  184 000001E0         
+  185 000001E0 000001E0 
+                       __Vectors_Size
+                               EQU              __Vectors_End - __Vectors
+  186 000001E0         
+  187 000001E0                 AREA             |.text|, CODE, READONLY
+  188 00000000         
+  189 00000000         ;/* reset Handler */
+  190 00000000         Reset_Handler
+                               PROC
+  191 00000000                 EXPORT           Reset_Handler                  
+   [WEAK]
+  192 00000000         
+  193 00000000 F04F 5080       LDR              R0, =0x10000000
+  194 00000004 F04F 0140       MOV              R1, #64
+  195 00000008 EA4F 2181       LSL              R1, R1, #10
+  196 0000000C F04F 0200       MOV              R2, #0x00
+  197 00000010 C004    TCMSRAM_INIT
+                               STM              R0!, {R2}
+  198 00000012 1F09            SUBS             R1, R1, #4
+  199 00000014 2900            CMP              R1, #0x00
+  200 00000016 D1FB            BNE              TCMSRAM_INIT
+  201 00000018         
+  202 00000018 480F            LDR              R0, =0x1FFF7A20
+  203 0000001A 6802            LDR              R2, [R0]
+  204 0000001C 3A40            SUBS             R2, R2, #64
+  205 0000001E F64F 70FF       LDR              R0, = 0x0000FFFF
+  206 00000022 EA02 0200       AND              R2, R2, R0
+  207 00000026 EA4F 2282       LSL              R2, R2, #10
+  208 0000002A F04F 5100       LDR              R1, =0x20000000
+  209 0000002E F04F 0000       MOV              R0, #0x00
+  210 00000032 C101    SRAM_INIT
+                               STM              R1!, {R0}
+  211 00000034 1F12            SUBS             R2, R2, #4
+  212 00000036 2A00            CMP              R2, #0x00
+  213 00000038 D1FB            BNE              SRAM_INIT
+  214 0000003A         
+  215 0000003A                 IMPORT           SystemInit
+  216 0000003A                 IMPORT           __main
+  217 0000003A 4808            LDR              R0, =SystemInit
+  218 0000003C 4780            BLX              R0
+  219 0000003E 4808            LDR              R0, =__main
+  220 00000040 4700            BX               R0
+  221 00000042                 ENDP
+  222 00000042         
+  223 00000042         ;/* dummy Exception Handlers */
+  224 00000042         NMI_Handler
+                               PROC
+  225 00000042                 EXPORT           NMI_Handler                    
+
+
+
+ARM Macro Assembler    Page 7 
+
+
+         [WEAK]
+  226 00000042 E7FE            B                .
+  227 00000044                 ENDP
+  229 00000044         HardFault_Handler
+                               PROC
+  230 00000044                 EXPORT           HardFault_Handler              
+         [WEAK]
+  231 00000044 E7FE            B                .
+  232 00000046                 ENDP
+  234 00000046         MemManage_Handler
+                               PROC
+  235 00000046                 EXPORT           MemManage_Handler              
+         [WEAK]
+  236 00000046 E7FE            B                .
+  237 00000048                 ENDP
+  239 00000048         BusFault_Handler
+                               PROC
+  240 00000048                 EXPORT           BusFault_Handler               
+         [WEAK]
+  241 00000048 E7FE            B                .
+  242 0000004A                 ENDP
+  244 0000004A         UsageFault_Handler
+                               PROC
+  245 0000004A                 EXPORT           UsageFault_Handler             
+         [WEAK]
+  246 0000004A E7FE            B                .
+  247 0000004C                 ENDP
+  248 0000004C         SVC_Handler
+                               PROC
+  249 0000004C                 EXPORT           SVC_Handler                    
+         [WEAK]
+  250 0000004C E7FE            B                .
+  251 0000004E                 ENDP
+  253 0000004E         DebugMon_Handler
+                               PROC
+  254 0000004E                 EXPORT           DebugMon_Handler               
+         [WEAK]
+  255 0000004E E7FE            B                .
+  256 00000050                 ENDP
+  258 00000050         PendSV_Handler
+                               PROC
+  259 00000050                 EXPORT           PendSV_Handler                 
+         [WEAK]
+  260 00000050 E7FE            B                .
+  261 00000052                 ENDP
+  263 00000052         SysTick_Handler
+                               PROC
+  264 00000052                 EXPORT           SysTick_Handler                
+         [WEAK]
+  265 00000052 E7FE            B                .
+  266 00000054                 ENDP
+  267 00000054         
+  268 00000054         Default_Handler
+                               PROC
+  269 00000054         ;               /* external interrupts handler */
+  270 00000054                 EXPORT           WWDGT_IRQHandler               
+         [WEAK]
+  271 00000054                 EXPORT           LVD_IRQHandler                 
+         [WEAK]
+
+
+
+ARM Macro Assembler    Page 8 
+
+
+  272 00000054                 EXPORT           TAMPER_STAMP_IRQHandler        
+         [WEAK]
+  273 00000054                 EXPORT           RTC_WKUP_IRQHandler            
+         [WEAK]
+  274 00000054                 EXPORT           FMC_IRQHandler                 
+         [WEAK]
+  275 00000054                 EXPORT           RCU_CTC_IRQHandler             
+         [WEAK]
+  276 00000054                 EXPORT           EXTI0_IRQHandler               
+         [WEAK]
+  277 00000054                 EXPORT           EXTI1_IRQHandler               
+         [WEAK]
+  278 00000054                 EXPORT           EXTI2_IRQHandler               
+         [WEAK]
+  279 00000054                 EXPORT           EXTI3_IRQHandler               
+         [WEAK]
+  280 00000054                 EXPORT           EXTI4_IRQHandler               
+         [WEAK]
+  281 00000054                 EXPORT           DMA0_Channel0_IRQHandler       
+         [WEAK]
+  282 00000054                 EXPORT           DMA0_Channel1_IRQHandler       
+         [WEAK]
+  283 00000054                 EXPORT           DMA0_Channel2_IRQHandler       
+         [WEAK]
+  284 00000054                 EXPORT           DMA0_Channel3_IRQHandler       
+         [WEAK]
+  285 00000054                 EXPORT           DMA0_Channel4_IRQHandler       
+         [WEAK]
+  286 00000054                 EXPORT           DMA0_Channel5_IRQHandler       
+         [WEAK]
+  287 00000054                 EXPORT           DMA0_Channel6_IRQHandler       
+         [WEAK]
+  288 00000054                 EXPORT           ADC_IRQHandler                 
+         [WEAK]
+  289 00000054                 EXPORT           CAN0_TX_IRQHandler             
+         [WEAK]
+  290 00000054                 EXPORT           CAN0_RX0_IRQHandler            
+         [WEAK]
+  291 00000054                 EXPORT           CAN0_RX1_IRQHandler            
+         [WEAK]
+  292 00000054                 EXPORT           CAN0_EWMC_IRQHandler           
+         [WEAK]
+  293 00000054                 EXPORT           EXTI5_9_IRQHandler             
+         [WEAK]
+  294 00000054                 EXPORT           TIMER0_BRK_TIMER8_IRQHandler   
+         [WEAK]
+  295 00000054                 EXPORT           TIMER0_UP_TIMER9_IRQHandler    
+         [WEAK]
+  296 00000054                 EXPORT           TIMER0_TRG_CMT_TIMER10_IRQHandl
+er       [WEAK]
+  297 00000054                 EXPORT           TIMER0_Channel_IRQHandler      
+         [WEAK]
+  298 00000054                 EXPORT           TIMER1_IRQHandler              
+         [WEAK]
+  299 00000054                 EXPORT           TIMER2_IRQHandler              
+         [WEAK]
+  300 00000054                 EXPORT           TIMER3_IRQHandler              
+         [WEAK]
+  301 00000054                 EXPORT           I2C0_EV_IRQHandler             
+
+
+
+ARM Macro Assembler    Page 9 
+
+
+         [WEAK]
+  302 00000054                 EXPORT           I2C0_ER_IRQHandler             
+         [WEAK]
+  303 00000054                 EXPORT           I2C1_EV_IRQHandler             
+         [WEAK]
+  304 00000054                 EXPORT           I2C1_ER_IRQHandler             
+         [WEAK]
+  305 00000054                 EXPORT           SPI0_IRQHandler                
+         [WEAK]
+  306 00000054                 EXPORT           SPI1_IRQHandler                
+         [WEAK]
+  307 00000054                 EXPORT           USART0_IRQHandler              
+         [WEAK]
+  308 00000054                 EXPORT           USART1_IRQHandler              
+         [WEAK]
+  309 00000054                 EXPORT           USART2_IRQHandler              
+         [WEAK]
+  310 00000054                 EXPORT           EXTI10_15_IRQHandler           
+         [WEAK]
+  311 00000054                 EXPORT           RTC_Alarm_IRQHandler           
+         [WEAK]
+  312 00000054                 EXPORT           USBFS_WKUP_IRQHandler          
+         [WEAK]
+  313 00000054                 EXPORT           TIMER7_BRK_TIMER11_IRQHandler  
+         [WEAK]
+  314 00000054                 EXPORT           TIMER7_UP_TIMER12_IRQHandler   
+         [WEAK]
+  315 00000054                 EXPORT           TIMER7_TRG_CMT_TIMER13_IRQHandl
+er       [WEAK]
+  316 00000054                 EXPORT           TIMER7_Channel_IRQHandler      
+         [WEAK]
+  317 00000054                 EXPORT           DMA0_Channel7_IRQHandler       
+         [WEAK]
+  318 00000054                 EXPORT           EXMC_IRQHandler                
+         [WEAK]
+  319 00000054                 EXPORT           SDIO_IRQHandler                
+         [WEAK]
+  320 00000054                 EXPORT           TIMER4_IRQHandler              
+         [WEAK]
+  321 00000054                 EXPORT           SPI2_IRQHandler                
+         [WEAK]
+  322 00000054                 EXPORT           UART3_IRQHandler               
+         [WEAK]
+  323 00000054                 EXPORT           UART4_IRQHandler               
+         [WEAK]
+  324 00000054                 EXPORT           TIMER5_DAC_IRQHandler          
+         [WEAK]
+  325 00000054                 EXPORT           TIMER6_IRQHandler              
+         [WEAK]
+  326 00000054                 EXPORT           DMA1_Channel0_IRQHandler       
+         [WEAK]
+  327 00000054                 EXPORT           DMA1_Channel1_IRQHandler       
+         [WEAK]
+  328 00000054                 EXPORT           DMA1_Channel2_IRQHandler       
+         [WEAK]
+  329 00000054                 EXPORT           DMA1_Channel3_IRQHandler       
+         [WEAK]
+  330 00000054                 EXPORT           DMA1_Channel4_IRQHandler       
+         [WEAK]
+
+
+
+ARM Macro Assembler    Page 10 
+
+
+  331 00000054                 EXPORT           ENET_IRQHandler                
+         [WEAK]
+  332 00000054                 EXPORT           ENET_WKUP_IRQHandler           
+         [WEAK]
+  333 00000054                 EXPORT           CAN1_TX_IRQHandler             
+         [WEAK]
+  334 00000054                 EXPORT           CAN1_RX0_IRQHandler            
+         [WEAK]
+  335 00000054                 EXPORT           CAN1_RX1_IRQHandler            
+         [WEAK]
+  336 00000054                 EXPORT           CAN1_EWMC_IRQHandler           
+         [WEAK]
+  337 00000054                 EXPORT           USBFS_IRQHandler               
+         [WEAK]
+  338 00000054                 EXPORT           DMA1_Channel5_IRQHandler       
+         [WEAK]
+  339 00000054                 EXPORT           DMA1_Channel6_IRQHandler       
+         [WEAK]
+  340 00000054                 EXPORT           DMA1_Channel7_IRQHandler       
+         [WEAK]
+  341 00000054                 EXPORT           USART5_IRQHandler              
+         [WEAK]
+  342 00000054                 EXPORT           I2C2_EV_IRQHandler             
+         [WEAK]
+  343 00000054                 EXPORT           I2C2_ER_IRQHandler             
+         [WEAK]
+  344 00000054                 EXPORT           USBHS_EP1_Out_IRQHandler       
+         [WEAK]
+  345 00000054                 EXPORT           USBHS_EP1_In_IRQHandler        
+         [WEAK]
+  346 00000054                 EXPORT           USBHS_WKUP_IRQHandler          
+         [WEAK]
+  347 00000054                 EXPORT           USBHS_IRQHandler               
+         [WEAK]
+  348 00000054                 EXPORT           DCI_IRQHandler                 
+         [WEAK]
+  349 00000054                 EXPORT           TRNG_IRQHandler                
+         [WEAK]
+  350 00000054                 EXPORT           FPU_IRQHandler                 
+         [WEAK]
+  351 00000054                 EXPORT           UART6_IRQHandler               
+         [WEAK]
+  352 00000054                 EXPORT           UART7_IRQHandler               
+         [WEAK]
+  353 00000054                 EXPORT           SPI3_IRQHandler                
+         [WEAK]
+  354 00000054                 EXPORT           SPI4_IRQHandler                
+         [WEAK]
+  355 00000054                 EXPORT           SPI5_IRQHandler                
+         [WEAK]
+  356 00000054                 EXPORT           SAI_IRQHandler                 
+         [WEAK]
+  357 00000054                 EXPORT           TLI_IRQHandler                 
+         [WEAK]
+  358 00000054                 EXPORT           TLI_ER_IRQHandler              
+         [WEAK]
+  359 00000054                 EXPORT           IPA_IRQHandler                 
+         [WEAK]
+  360 00000054                 EXPORT           PKCAU_IRQHandler               
+
+
+
+ARM Macro Assembler    Page 11 
+
+
+         [WEAK]
+  361 00000054                 EXPORT           I2C3_EV_IRQHandler             
+         [WEAK]
+  362 00000054                 EXPORT           I2C3_ER_IRQHandler             
+         [WEAK]
+  363 00000054                 EXPORT           I2C4_EV_IRQHandler             
+         [WEAK]
+  364 00000054                 EXPORT           I2C4_ER_IRQHandler             
+         [WEAK]
+  365 00000054                 EXPORT           I2C5_EV_IRQHandler             
+         [WEAK]
+  366 00000054                 EXPORT           I2C5_ER_IRQHandler             
+         [WEAK]
+  367 00000054                 EXPORT           I2C3_WKUP_IRQHandler           
+         [WEAK]
+  368 00000054                 EXPORT           I2C4_WKUP_IRQHandler           
+         [WEAK]
+  369 00000054                 EXPORT           I2C5_WKUP_IRQHandler           
+         [WEAK]
+  370 00000054                 EXPORT           SYSCFG_SINGLE_BIT_ECC_ER_IRQHan
+dler     [WEAK]
+  371 00000054                 EXPORT           HAU_IRQHandler                 
+         [WEAK]
+  372 00000054                 EXPORT           CAU_IRQHandler                 
+         [WEAK]
+  373 00000054         
+  374 00000054         ;/* external interrupts handler */
+  375 00000054         WWDGT_IRQHandler
+  376 00000054         LVD_IRQHandler
+  377 00000054         TAMPER_STAMP_IRQHandler
+  378 00000054         RTC_WKUP_IRQHandler
+  379 00000054         FMC_IRQHandler
+  380 00000054         RCU_CTC_IRQHandler
+  381 00000054         EXTI0_IRQHandler
+  382 00000054         EXTI1_IRQHandler
+  383 00000054         EXTI2_IRQHandler
+  384 00000054         EXTI3_IRQHandler
+  385 00000054         EXTI4_IRQHandler
+  386 00000054         DMA0_Channel0_IRQHandler
+  387 00000054         DMA0_Channel1_IRQHandler
+  388 00000054         DMA0_Channel2_IRQHandler
+  389 00000054         DMA0_Channel3_IRQHandler
+  390 00000054         DMA0_Channel4_IRQHandler
+  391 00000054         DMA0_Channel5_IRQHandler
+  392 00000054         DMA0_Channel6_IRQHandler
+  393 00000054         ADC_IRQHandler
+  394 00000054         CAN0_TX_IRQHandler
+  395 00000054         CAN0_RX0_IRQHandler
+  396 00000054         CAN0_RX1_IRQHandler
+  397 00000054         CAN0_EWMC_IRQHandler
+  398 00000054         EXTI5_9_IRQHandler
+  399 00000054         TIMER0_BRK_TIMER8_IRQHandler
+  400 00000054         TIMER0_UP_TIMER9_IRQHandler
+  401 00000054         TIMER0_TRG_CMT_TIMER10_IRQHandler
+  402 00000054         TIMER0_Channel_IRQHandler
+  403 00000054         TIMER1_IRQHandler
+  404 00000054         TIMER2_IRQHandler
+  405 00000054         TIMER3_IRQHandler
+  406 00000054         I2C0_EV_IRQHandler
+
+
+
+ARM Macro Assembler    Page 12 
+
+
+  407 00000054         I2C0_ER_IRQHandler
+  408 00000054         I2C1_EV_IRQHandler
+  409 00000054         I2C1_ER_IRQHandler
+  410 00000054         SPI0_IRQHandler
+  411 00000054         SPI1_IRQHandler
+  412 00000054         USART0_IRQHandler
+  413 00000054         USART1_IRQHandler
+  414 00000054         USART2_IRQHandler
+  415 00000054         EXTI10_15_IRQHandler
+  416 00000054         RTC_Alarm_IRQHandler
+  417 00000054         USBFS_WKUP_IRQHandler
+  418 00000054         TIMER7_BRK_TIMER11_IRQHandler
+  419 00000054         TIMER7_UP_TIMER12_IRQHandler
+  420 00000054         TIMER7_TRG_CMT_TIMER13_IRQHandler
+  421 00000054         TIMER7_Channel_IRQHandler
+  422 00000054         DMA0_Channel7_IRQHandler
+  423 00000054         EXMC_IRQHandler
+  424 00000054         SDIO_IRQHandler
+  425 00000054         TIMER4_IRQHandler
+  426 00000054         SPI2_IRQHandler
+  427 00000054         UART3_IRQHandler
+  428 00000054         UART4_IRQHandler
+  429 00000054         TIMER5_DAC_IRQHandler
+  430 00000054         TIMER6_IRQHandler
+  431 00000054         DMA1_Channel0_IRQHandler
+  432 00000054         DMA1_Channel1_IRQHandler
+  433 00000054         DMA1_Channel2_IRQHandler
+  434 00000054         DMA1_Channel3_IRQHandler
+  435 00000054         DMA1_Channel4_IRQHandler
+  436 00000054         ENET_IRQHandler
+  437 00000054         ENET_WKUP_IRQHandler
+  438 00000054         CAN1_TX_IRQHandler
+  439 00000054         CAN1_RX0_IRQHandler
+  440 00000054         CAN1_RX1_IRQHandler
+  441 00000054         CAN1_EWMC_IRQHandler
+  442 00000054         USBFS_IRQHandler
+  443 00000054         DMA1_Channel5_IRQHandler
+  444 00000054         DMA1_Channel6_IRQHandler
+  445 00000054         DMA1_Channel7_IRQHandler
+  446 00000054         USART5_IRQHandler
+  447 00000054         I2C2_EV_IRQHandler
+  448 00000054         I2C2_ER_IRQHandler
+  449 00000054         USBHS_EP1_Out_IRQHandler
+  450 00000054         USBHS_EP1_In_IRQHandler
+  451 00000054         USBHS_WKUP_IRQHandler
+  452 00000054         USBHS_IRQHandler
+  453 00000054         DCI_IRQHandler
+  454 00000054         TRNG_IRQHandler
+  455 00000054         FPU_IRQHandler
+  456 00000054         UART6_IRQHandler
+  457 00000054         UART7_IRQHandler
+  458 00000054         SPI3_IRQHandler
+  459 00000054         SPI4_IRQHandler
+  460 00000054         SPI5_IRQHandler
+  461 00000054         SAI_IRQHandler
+  462 00000054         TLI_IRQHandler
+  463 00000054         TLI_ER_IRQHandler
+  464 00000054         IPA_IRQHandler
+  465 00000054         PKCAU_IRQHandler
+
+
+
+ARM Macro Assembler    Page 13 
+
+
+  466 00000054         I2C3_EV_IRQHandler
+  467 00000054         I2C3_ER_IRQHandler
+  468 00000054         I2C4_EV_IRQHandler
+  469 00000054         I2C4_ER_IRQHandler
+  470 00000054         I2C5_EV_IRQHandler
+  471 00000054         I2C5_ER_IRQHandler
+  472 00000054         I2C3_WKUP_IRQHandler
+  473 00000054         I2C4_WKUP_IRQHandler
+  474 00000054         I2C5_WKUP_IRQHandler
+  475 00000054         SYSCFG_SINGLE_BIT_ECC_ER_IRQHandler
+  476 00000054         HAU_IRQHandler
+  477 00000054         CAU_IRQHandler
+  478 00000054         
+  479 00000054 E7FE            B                .
+  480 00000056                 ENDP
+  481 00000056         
+  482 00000056 00 00           ALIGN
+  483 00000058         
+  484 00000058         ; user Initial Stack & Heap
+  485 00000058         
+  486 00000058                 IF               :DEF:__MICROLIB
+  487 00000058         
+  488 00000058                 EXPORT           __initial_sp
+  489 00000058                 EXPORT           __heap_base
+  490 00000058                 EXPORT           __heap_limit
+  491 00000058         
+  492 00000058                 ELSE
+  507                          ENDIF
+  508 00000058         
+  509 00000058                 END
+              1FFF7A20 
+              00000000 
+              00000000 
+Command Line: --debug --xref --diag_suppress=9931,A1950W --cpu=Cortex-M33.no_ds
+p --fpu=FPv5-SP --depend=.\output\startup_gd32f5xx.d -o.\output\startup_gd32f5x
+x.o -I.\RTE\_GD32F527I_EVAL -IE:\Keil_Packs\ARM\CMSIS\5.9.0\CMSIS\Core\Include 
+--predefine="__MICROLIB SETA 1" --predefine="__UVISION_VERSION SETA 539" --pred
+efine="_RTE_ SETA 1" --predefine="_RTE_ SETA 1" --list=.\list\startup_gd32f5xx.
+lst ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5xx\Source\ARM\startup_
+gd32f5xx.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+STACK 00000000
+
+Symbol: STACK
+   Definitions
+      At line 35 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      None
+Comment: STACK unused
+Stack_Mem 00000000
+
+Symbol: Stack_Mem
+   Definitions
+      At line 36 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      None
+Comment: Stack_Mem unused
+__initial_sp 00000400
+
+Symbol: __initial_sp
+   Definitions
+      At line 37 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 60 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 488 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+3 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+HEAP 00000000
+
+Symbol: HEAP
+   Definitions
+      At line 46 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      None
+Comment: HEAP unused
+Heap_Mem 00000000
+
+Symbol: Heap_Mem
+   Definitions
+      At line 48 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      None
+Comment: Heap_Mem unused
+__heap_base 00000000
+
+Symbol: __heap_base
+   Definitions
+      At line 47 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 489 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+Comment: __heap_base used once
+__heap_limit 00000400
+
+Symbol: __heap_limit
+   Definitions
+      At line 49 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 490 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+Comment: __heap_limit used once
+4 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+RESET 00000000
+
+Symbol: RESET
+   Definitions
+      At line 55 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      None
+Comment: RESET unused
+__Vectors 00000000
+
+Symbol: __Vectors
+   Definitions
+      At line 60 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 56 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 185 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+__Vectors_End 000001E0
+
+Symbol: __Vectors_End
+   Definitions
+      At line 183 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 57 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 185 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+3 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+.text 00000000
+
+Symbol: .text
+   Definitions
+      At line 187 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      None
+Comment: .text unused
+ADC_IRQHandler 00000054
+
+Symbol: ADC_IRQHandler
+   Definitions
+      At line 393 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 96 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 288 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+BusFault_Handler 00000048
+
+Symbol: BusFault_Handler
+   Definitions
+      At line 239 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 65 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 240 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+CAN0_EWMC_IRQHandler 00000054
+
+Symbol: CAN0_EWMC_IRQHandler
+   Definitions
+      At line 397 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 100 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 292 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+CAN0_RX0_IRQHandler 00000054
+
+Symbol: CAN0_RX0_IRQHandler
+   Definitions
+      At line 395 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 98 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 290 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+CAN0_RX1_IRQHandler 00000054
+
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+Symbol: CAN0_RX1_IRQHandler
+   Definitions
+      At line 396 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 99 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 291 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+CAN0_TX_IRQHandler 00000054
+
+Symbol: CAN0_TX_IRQHandler
+   Definitions
+      At line 394 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 97 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 289 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+CAN1_EWMC_IRQHandler 00000054
+
+Symbol: CAN1_EWMC_IRQHandler
+   Definitions
+      At line 441 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 144 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 336 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+CAN1_RX0_IRQHandler 00000054
+
+Symbol: CAN1_RX0_IRQHandler
+   Definitions
+      At line 439 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 142 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 334 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+CAN1_RX1_IRQHandler 00000054
+
+Symbol: CAN1_RX1_IRQHandler
+   Definitions
+      At line 440 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 143 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 335 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+CAN1_TX_IRQHandler 00000054
+
+
+
+ARM Macro Assembler    Page 3 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: CAN1_TX_IRQHandler
+   Definitions
+      At line 438 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 141 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 333 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+CAU_IRQHandler 00000054
+
+Symbol: CAU_IRQHandler
+   Definitions
+      At line 477 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 181 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 372 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DCI_IRQHandler 00000054
+
+Symbol: DCI_IRQHandler
+   Definitions
+      At line 453 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 156 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 348 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA0_Channel0_IRQHandler 00000054
+
+Symbol: DMA0_Channel0_IRQHandler
+   Definitions
+      At line 386 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 89 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 281 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA0_Channel1_IRQHandler 00000054
+
+Symbol: DMA0_Channel1_IRQHandler
+   Definitions
+      At line 387 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 90 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 282 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+
+
+
+ARM Macro Assembler    Page 4 Alphabetic symbol ordering
+Relocatable symbols
+
+DMA0_Channel2_IRQHandler 00000054
+
+Symbol: DMA0_Channel2_IRQHandler
+   Definitions
+      At line 388 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 91 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 283 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA0_Channel3_IRQHandler 00000054
+
+Symbol: DMA0_Channel3_IRQHandler
+   Definitions
+      At line 389 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 92 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 284 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA0_Channel4_IRQHandler 00000054
+
+Symbol: DMA0_Channel4_IRQHandler
+   Definitions
+      At line 390 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 93 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 285 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA0_Channel5_IRQHandler 00000054
+
+Symbol: DMA0_Channel5_IRQHandler
+   Definitions
+      At line 391 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 94 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 286 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA0_Channel6_IRQHandler 00000054
+
+Symbol: DMA0_Channel6_IRQHandler
+   Definitions
+      At line 392 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 95 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 287 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+
+
+ARM Macro Assembler    Page 5 Alphabetic symbol ordering
+Relocatable symbols
+
+
+DMA0_Channel7_IRQHandler 00000054
+
+Symbol: DMA0_Channel7_IRQHandler
+   Definitions
+      At line 422 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 125 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 317 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA1_Channel0_IRQHandler 00000054
+
+Symbol: DMA1_Channel0_IRQHandler
+   Definitions
+      At line 431 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 134 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 326 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA1_Channel1_IRQHandler 00000054
+
+Symbol: DMA1_Channel1_IRQHandler
+   Definitions
+      At line 432 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 135 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 327 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA1_Channel2_IRQHandler 00000054
+
+Symbol: DMA1_Channel2_IRQHandler
+   Definitions
+      At line 433 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 136 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 328 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA1_Channel3_IRQHandler 00000054
+
+Symbol: DMA1_Channel3_IRQHandler
+   Definitions
+      At line 434 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 137 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 329 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+
+
+
+ARM Macro Assembler    Page 6 Alphabetic symbol ordering
+Relocatable symbols
+
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA1_Channel4_IRQHandler 00000054
+
+Symbol: DMA1_Channel4_IRQHandler
+   Definitions
+      At line 435 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 138 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 330 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA1_Channel5_IRQHandler 00000054
+
+Symbol: DMA1_Channel5_IRQHandler
+   Definitions
+      At line 443 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 146 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 338 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA1_Channel6_IRQHandler 00000054
+
+Symbol: DMA1_Channel6_IRQHandler
+   Definitions
+      At line 444 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 147 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 339 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DMA1_Channel7_IRQHandler 00000054
+
+Symbol: DMA1_Channel7_IRQHandler
+   Definitions
+      At line 445 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 148 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 340 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+DebugMon_Handler 0000004E
+
+Symbol: DebugMon_Handler
+   Definitions
+      At line 253 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 72 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+
+
+
+ARM Macro Assembler    Page 7 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 254 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+Default_Handler 00000054
+
+Symbol: Default_Handler
+   Definitions
+      At line 268 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      None
+Comment: Default_Handler unused
+ENET_IRQHandler 00000054
+
+Symbol: ENET_IRQHandler
+   Definitions
+      At line 436 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 139 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 331 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+ENET_WKUP_IRQHandler 00000054
+
+Symbol: ENET_WKUP_IRQHandler
+   Definitions
+      At line 437 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 140 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 332 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+EXMC_IRQHandler 00000054
+
+Symbol: EXMC_IRQHandler
+   Definitions
+      At line 423 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 126 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 318 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+EXTI0_IRQHandler 00000054
+
+Symbol: EXTI0_IRQHandler
+   Definitions
+      At line 381 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 84 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 276 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+
+
+ARM Macro Assembler    Page 8 Alphabetic symbol ordering
+Relocatable symbols
+
+
+EXTI10_15_IRQHandler 00000054
+
+Symbol: EXTI10_15_IRQHandler
+   Definitions
+      At line 415 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 118 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 310 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+EXTI1_IRQHandler 00000054
+
+Symbol: EXTI1_IRQHandler
+   Definitions
+      At line 382 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 85 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 277 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+EXTI2_IRQHandler 00000054
+
+Symbol: EXTI2_IRQHandler
+   Definitions
+      At line 383 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 86 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 278 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+EXTI3_IRQHandler 00000054
+
+Symbol: EXTI3_IRQHandler
+   Definitions
+      At line 384 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 87 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 279 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+EXTI4_IRQHandler 00000054
+
+Symbol: EXTI4_IRQHandler
+   Definitions
+      At line 385 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 88 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 280 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+
+
+
+ARM Macro Assembler    Page 9 Alphabetic symbol ordering
+Relocatable symbols
+
+xx\Source\ARM\startup_gd32f5xx.s
+
+EXTI5_9_IRQHandler 00000054
+
+Symbol: EXTI5_9_IRQHandler
+   Definitions
+      At line 398 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 101 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 293 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+FMC_IRQHandler 00000054
+
+Symbol: FMC_IRQHandler
+   Definitions
+      At line 379 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 82 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 274 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+FPU_IRQHandler 00000054
+
+Symbol: FPU_IRQHandler
+   Definitions
+      At line 455 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 159 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 350 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+HAU_IRQHandler 00000054
+
+Symbol: HAU_IRQHandler
+   Definitions
+      At line 476 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 180 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 371 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+HardFault_Handler 00000044
+
+Symbol: HardFault_Handler
+   Definitions
+      At line 229 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 63 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+
+
+
+ARM Macro Assembler    Page 10 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 230 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C0_ER_IRQHandler 00000054
+
+Symbol: I2C0_ER_IRQHandler
+   Definitions
+      At line 407 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 110 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 302 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C0_EV_IRQHandler 00000054
+
+Symbol: I2C0_EV_IRQHandler
+   Definitions
+      At line 406 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 109 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 301 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C1_ER_IRQHandler 00000054
+
+Symbol: I2C1_ER_IRQHandler
+   Definitions
+      At line 409 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 112 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 304 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C1_EV_IRQHandler 00000054
+
+Symbol: I2C1_EV_IRQHandler
+   Definitions
+      At line 408 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 111 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 303 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C2_ER_IRQHandler 00000054
+
+Symbol: I2C2_ER_IRQHandler
+   Definitions
+      At line 448 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 151 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+
+
+
+ARM Macro Assembler    Page 11 Alphabetic symbol ordering
+Relocatable symbols
+
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 343 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C2_EV_IRQHandler 00000054
+
+Symbol: I2C2_EV_IRQHandler
+   Definitions
+      At line 447 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 150 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 342 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C3_ER_IRQHandler 00000054
+
+Symbol: I2C3_ER_IRQHandler
+   Definitions
+      At line 467 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 171 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 362 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C3_EV_IRQHandler 00000054
+
+Symbol: I2C3_EV_IRQHandler
+   Definitions
+      At line 466 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 170 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 361 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C3_WKUP_IRQHandler 00000054
+
+Symbol: I2C3_WKUP_IRQHandler
+   Definitions
+      At line 472 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 176 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 367 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C4_ER_IRQHandler 00000054
+
+Symbol: I2C4_ER_IRQHandler
+   Definitions
+      At line 469 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+
+
+
+ARM Macro Assembler    Page 12 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 173 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 364 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C4_EV_IRQHandler 00000054
+
+Symbol: I2C4_EV_IRQHandler
+   Definitions
+      At line 468 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 172 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 363 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C4_WKUP_IRQHandler 00000054
+
+Symbol: I2C4_WKUP_IRQHandler
+   Definitions
+      At line 473 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 177 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 368 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C5_ER_IRQHandler 00000054
+
+Symbol: I2C5_ER_IRQHandler
+   Definitions
+      At line 471 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 175 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 366 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C5_EV_IRQHandler 00000054
+
+Symbol: I2C5_EV_IRQHandler
+   Definitions
+      At line 470 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 174 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 365 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+I2C5_WKUP_IRQHandler 00000054
+
+Symbol: I2C5_WKUP_IRQHandler
+   Definitions
+      At line 474 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+
+
+ARM Macro Assembler    Page 13 Alphabetic symbol ordering
+Relocatable symbols
+
+   Uses
+      At line 178 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 369 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+IPA_IRQHandler 00000054
+
+Symbol: IPA_IRQHandler
+   Definitions
+      At line 464 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 168 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 359 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+LVD_IRQHandler 00000054
+
+Symbol: LVD_IRQHandler
+   Definitions
+      At line 376 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 79 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 271 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+MemManage_Handler 00000046
+
+Symbol: MemManage_Handler
+   Definitions
+      At line 234 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 64 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 235 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+NMI_Handler 00000042
+
+Symbol: NMI_Handler
+   Definitions
+      At line 224 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 62 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 225 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+PKCAU_IRQHandler 00000054
+
+Symbol: PKCAU_IRQHandler
+   Definitions
+      At line 465 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+
+
+
+ARM Macro Assembler    Page 14 Alphabetic symbol ordering
+Relocatable symbols
+
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 169 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 360 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+PendSV_Handler 00000050
+
+Symbol: PendSV_Handler
+   Definitions
+      At line 258 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 74 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 259 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+RCU_CTC_IRQHandler 00000054
+
+Symbol: RCU_CTC_IRQHandler
+   Definitions
+      At line 380 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 83 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 275 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+RTC_Alarm_IRQHandler 00000054
+
+Symbol: RTC_Alarm_IRQHandler
+   Definitions
+      At line 416 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 119 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 311 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+RTC_WKUP_IRQHandler 00000054
+
+Symbol: RTC_WKUP_IRQHandler
+   Definitions
+      At line 378 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 81 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 273 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+Reset_Handler 00000000
+
+Symbol: Reset_Handler
+   Definitions
+
+
+
+ARM Macro Assembler    Page 15 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 190 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 61 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 191 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SAI_IRQHandler 00000054
+
+Symbol: SAI_IRQHandler
+   Definitions
+      At line 461 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 165 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 356 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SDIO_IRQHandler 00000054
+
+Symbol: SDIO_IRQHandler
+   Definitions
+      At line 424 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 127 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 319 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SPI0_IRQHandler 00000054
+
+Symbol: SPI0_IRQHandler
+   Definitions
+      At line 410 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 113 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 305 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SPI1_IRQHandler 00000054
+
+Symbol: SPI1_IRQHandler
+   Definitions
+      At line 411 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 114 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 306 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SPI2_IRQHandler 00000054
+
+Symbol: SPI2_IRQHandler
+
+
+
+ARM Macro Assembler    Page 16 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 426 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 129 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 321 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SPI3_IRQHandler 00000054
+
+Symbol: SPI3_IRQHandler
+   Definitions
+      At line 458 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 162 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 353 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SPI4_IRQHandler 00000054
+
+Symbol: SPI4_IRQHandler
+   Definitions
+      At line 459 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 163 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 354 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SPI5_IRQHandler 00000054
+
+Symbol: SPI5_IRQHandler
+   Definitions
+      At line 460 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 164 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 355 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SRAM_INIT 00000032
+
+Symbol: SRAM_INIT
+   Definitions
+      At line 210 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 213 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+Comment: SRAM_INIT used once
+SVC_Handler 0000004C
+
+Symbol: SVC_Handler
+   Definitions
+
+
+
+ARM Macro Assembler    Page 17 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 248 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 71 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 249 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SYSCFG_SINGLE_BIT_ECC_ER_IRQHandler 00000054
+
+Symbol: SYSCFG_SINGLE_BIT_ECC_ER_IRQHandler
+   Definitions
+      At line 475 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 179 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 370 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+SysTick_Handler 00000052
+
+Symbol: SysTick_Handler
+   Definitions
+      At line 263 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 75 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 264 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TAMPER_STAMP_IRQHandler 00000054
+
+Symbol: TAMPER_STAMP_IRQHandler
+   Definitions
+      At line 377 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 80 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 272 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TCMSRAM_INIT 00000010
+
+Symbol: TCMSRAM_INIT
+   Definitions
+      At line 197 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 200 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+Comment: TCMSRAM_INIT used once
+TIMER0_BRK_TIMER8_IRQHandler 00000054
+
+Symbol: TIMER0_BRK_TIMER8_IRQHandler
+   Definitions
+      At line 399 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+
+
+
+ARM Macro Assembler    Page 18 Alphabetic symbol ordering
+Relocatable symbols
+
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 102 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 294 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER0_Channel_IRQHandler 00000054
+
+Symbol: TIMER0_Channel_IRQHandler
+   Definitions
+      At line 402 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 105 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 297 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER0_TRG_CMT_TIMER10_IRQHandler 00000054
+
+Symbol: TIMER0_TRG_CMT_TIMER10_IRQHandler
+   Definitions
+      At line 401 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 104 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 296 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER0_UP_TIMER9_IRQHandler 00000054
+
+Symbol: TIMER0_UP_TIMER9_IRQHandler
+   Definitions
+      At line 400 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 103 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 295 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER1_IRQHandler 00000054
+
+Symbol: TIMER1_IRQHandler
+   Definitions
+      At line 403 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 106 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 298 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER2_IRQHandler 00000054
+
+Symbol: TIMER2_IRQHandler
+   Definitions
+
+
+
+ARM Macro Assembler    Page 19 Alphabetic symbol ordering
+Relocatable symbols
+
+      At line 404 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 107 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 299 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER3_IRQHandler 00000054
+
+Symbol: TIMER3_IRQHandler
+   Definitions
+      At line 405 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 108 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 300 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER4_IRQHandler 00000054
+
+Symbol: TIMER4_IRQHandler
+   Definitions
+      At line 425 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 128 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 320 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER5_DAC_IRQHandler 00000054
+
+Symbol: TIMER5_DAC_IRQHandler
+   Definitions
+      At line 429 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 132 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 324 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER6_IRQHandler 00000054
+
+Symbol: TIMER6_IRQHandler
+   Definitions
+      At line 430 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 133 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 325 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER7_BRK_TIMER11_IRQHandler 00000054
+
+Symbol: TIMER7_BRK_TIMER11_IRQHandler
+
+
+
+ARM Macro Assembler    Page 20 Alphabetic symbol ordering
+Relocatable symbols
+
+   Definitions
+      At line 418 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 121 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 313 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER7_Channel_IRQHandler 00000054
+
+Symbol: TIMER7_Channel_IRQHandler
+   Definitions
+      At line 421 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 124 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 316 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER7_TRG_CMT_TIMER13_IRQHandler 00000054
+
+Symbol: TIMER7_TRG_CMT_TIMER13_IRQHandler
+   Definitions
+      At line 420 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 123 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 315 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TIMER7_UP_TIMER12_IRQHandler 00000054
+
+Symbol: TIMER7_UP_TIMER12_IRQHandler
+   Definitions
+      At line 419 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 122 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 314 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TLI_ER_IRQHandler 00000054
+
+Symbol: TLI_ER_IRQHandler
+   Definitions
+      At line 463 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 167 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 358 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TLI_IRQHandler 00000054
+
+
+
+
+ARM Macro Assembler    Page 21 Alphabetic symbol ordering
+Relocatable symbols
+
+Symbol: TLI_IRQHandler
+   Definitions
+      At line 462 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 166 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 357 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+TRNG_IRQHandler 00000054
+
+Symbol: TRNG_IRQHandler
+   Definitions
+      At line 454 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 158 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 349 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+UART3_IRQHandler 00000054
+
+Symbol: UART3_IRQHandler
+   Definitions
+      At line 427 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 130 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 322 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+UART4_IRQHandler 00000054
+
+Symbol: UART4_IRQHandler
+   Definitions
+      At line 428 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 131 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 323 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+UART6_IRQHandler 00000054
+
+Symbol: UART6_IRQHandler
+   Definitions
+      At line 456 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 160 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 351 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+UART7_IRQHandler 00000054
+
+
+
+ARM Macro Assembler    Page 22 Alphabetic symbol ordering
+Relocatable symbols
+
+
+Symbol: UART7_IRQHandler
+   Definitions
+      At line 457 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 161 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 352 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+USART0_IRQHandler 00000054
+
+Symbol: USART0_IRQHandler
+   Definitions
+      At line 412 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 115 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 307 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+USART1_IRQHandler 00000054
+
+Symbol: USART1_IRQHandler
+   Definitions
+      At line 413 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 116 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 308 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+USART2_IRQHandler 00000054
+
+Symbol: USART2_IRQHandler
+   Definitions
+      At line 414 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 117 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 309 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+USART5_IRQHandler 00000054
+
+Symbol: USART5_IRQHandler
+   Definitions
+      At line 446 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 149 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 341 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+
+
+
+ARM Macro Assembler    Page 23 Alphabetic symbol ordering
+Relocatable symbols
+
+USBFS_IRQHandler 00000054
+
+Symbol: USBFS_IRQHandler
+   Definitions
+      At line 442 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 145 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 337 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+USBFS_WKUP_IRQHandler 00000054
+
+Symbol: USBFS_WKUP_IRQHandler
+   Definitions
+      At line 417 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 120 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 312 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+USBHS_EP1_In_IRQHandler 00000054
+
+Symbol: USBHS_EP1_In_IRQHandler
+   Definitions
+      At line 450 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 153 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 345 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+USBHS_EP1_Out_IRQHandler 00000054
+
+Symbol: USBHS_EP1_Out_IRQHandler
+   Definitions
+      At line 449 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 152 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 344 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+USBHS_IRQHandler 00000054
+
+Symbol: USBHS_IRQHandler
+   Definitions
+      At line 452 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 155 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 347 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+
+
+ARM Macro Assembler    Page 24 Alphabetic symbol ordering
+Relocatable symbols
+
+
+USBHS_WKUP_IRQHandler 00000054
+
+Symbol: USBHS_WKUP_IRQHandler
+   Definitions
+      At line 451 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 154 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+      At line 346 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+UsageFault_Handler 0000004A
+
+Symbol: UsageFault_Handler
+   Definitions
+      At line 244 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 66 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 245 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+WWDGT_IRQHandler 00000054
+
+Symbol: WWDGT_IRQHandler
+   Definitions
+      At line 375 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 78 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+      At line 270 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+
+117 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Absolute symbols
+
+Heap_Size 00000400
+
+Symbol: Heap_Size
+   Definitions
+      At line 44 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 48 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+Comment: Heap_Size used once
+Stack_Size 00000400
+
+Symbol: Stack_Size
+   Definitions
+      At line 33 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 36 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+Comment: Stack_Size used once
+__Vectors_Size 000001E0
+
+Symbol: __Vectors_Size
+   Definitions
+      At line 185 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 58 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5x
+x\Source\ARM\startup_gd32f5xx.s
+Comment: __Vectors_Size used once
+3 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+SystemInit 00000000
+
+Symbol: SystemInit
+   Definitions
+      At line 215 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 217 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+Comment: SystemInit used once
+__main 00000000
+
+Symbol: __main
+   Definitions
+      At line 216 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+   Uses
+      At line 219 in file ..\..\..\..\GD32F5xx_Firmware_Library\CMSIS\GD\GD32F5
+xx\Source\ARM\startup_gd32f5xx.s
+Comment: __main used once
+2 symbols
+468 symbols in table

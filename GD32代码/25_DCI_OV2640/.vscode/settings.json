@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.markdown": "markdown",
+        "main.h": "c",
+        "exmc_sdram.h": "c"
+    }
+}
